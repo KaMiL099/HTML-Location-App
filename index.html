@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gra terenowa</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+
+</body>
+</html>
+
+
+<script src="https://unpkg.com/leaflet@1.9.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+<script>
+     
+    var map = L.map('map').setView([50.0860746, 19.608406], 6);
+
+    
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    osm.addTo(map);
+    
+    var t = L.Routing.control({
+            waypoints: [
+                L.latLng(39.8742, 18.999),
+                L.latLng(49.80621, 19.02993),
+                L.latLng(49.99987, 19.41054)
+            ],
+            
+    // createMarker: function() { return null; },
+        routeWhileDragging: false,
+        draggableWaypoints: false,
+        reverseWaypoints: false,
+        fitSelectedRoutes: false,
+        addWaypoints: false
+        }).addTo(map);
+
+    if(!navigator.geolocation) {
+        console.log("Geolocation error!")
+    } else {
+        navigator.geolocation.getCurrentPosition(getPosition)
+        setInterval(() => {
+            navigator.geolocation.getCurrentPosition(getPosition)
+            
+        }, 5000);
+    }
+
+    var marker, circle;
+    var wynikodpowiedzi = 0;
+    var bolto1st = true;
+    var bolto2st = true;
+    function getPosition(position){
+
+        console.log(position)
+        var lat = position.coords.latitude
+        var long = position.coords.longitude
+        var accuracy = position.coords.accuracy
+  
+        
+        var newLatLng = new L.LatLng(lat, long);
+        t.spliceWaypoints(0,1,newLatLng)
+        
+    
+        if(marker) {
+        map.removeLayer(marker)
+        }
+
+        if(circle) {
+            map.removeLayer(circle)
+        }
+       
+
+        marker = L.marker([lat, long])
+        circle = L.circle([lat, long], {radius: accuracy})
+
+        var featureGroup = L.featureGroup([marker, circle]).addTo(map)
+
+        console.log("Lat:"+ lat +"Long:"+ long+ "Accuracy:"+ accuracy); 
+ 
+        actuala = Math.round(lat * 100000) / 100000
+        actualb = Math.round(long * 100000) / 100000
+        desta = 49.80621
+        destb = 19.02993
+
+        theta = actualb - destb
+        distance = 60 * 1.1515 * (180/Math.PI) * Math.acos(
+        Math.sin(actuala * (Math.PI/180)) * Math.sin(desta * (Math.PI/180)) + 
+        Math.cos(actuala * (Math.PI/180)) * Math.cos(desta * (Math.PI/180)) * Math.cos(theta * (Math.PI/180)));   
+        range = distance * 1.609344;
+
+        console.log("r1",range)
+
+        L.latLng(49.99987, 19.41054)
+        actuala2 = Math.round(lat * 100000) / 100000
+        actualb2 = Math.round(long * 100000) / 100000
+        desta2 = 49.99987
+        destb2 = 19.41054
+
+        theta2 = actualb2 - destb2
+        distance2 = 60 * 1.1515 * (180/Math.PI) * Math.acos(
+        Math.sin(actuala2 * (Math.PI/180)) * Math.sin(desta2 * (Math.PI/180)) + 
+        Math.cos(actuala2 * (Math.PI/180)) * Math.cos(desta2 * (Math.PI/180)) * Math.cos(theta2 * (Math.PI/180)));   
+        range2 = distance2 * 1.609344;
+
+        console.log("r2",range2)
+
+        if(range < 0.5 && bolto1st==true)
+        {  
+            let text;
+            let wyn = prompt("Podaj wynik 3 plus 3", "Podaj liczbe");
+            bolto1st=false
+            if (wyn == 6 || wyn == "6") {
+                wynikodpowiedzi++;
+            } else {
+                console.log("zla odpowiedz")
+            }
+        }
+        if(range2 < 0.5 && bolto2st==true)
+        {  
+            let text;
+            let wyn2 = prompt("Podaj 6 plus 3 ", "Podaj liczbe");
+            bolto2st=false
+            if (wyn2 == 9 || wyn2 == "9") {
+                wynikodpowiedzi++;
+            } else {
+                console.log("zla odpowiedz")
+            }
+        }
+        console.log(wynikodpowiedzi)
+    }
+
+</script>
